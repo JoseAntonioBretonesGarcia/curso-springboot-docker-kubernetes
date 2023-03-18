@@ -14,5 +14,6 @@ public interface UserClientRest {
     @GetMapping("/{id}")
     User getUser(@PathVariable Long id);
 
+    @PostMapping("/")
     User newUser(@RequestBody User user);
 }
