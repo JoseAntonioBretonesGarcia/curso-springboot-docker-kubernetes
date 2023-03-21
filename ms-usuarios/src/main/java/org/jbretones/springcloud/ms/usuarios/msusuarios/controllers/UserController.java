@@ -32,6 +32,11 @@ public class UserController {
         return userOptional.isPresent() ? ResponseEntity.ok(userOptional.get()) : ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/usuarios-por-curso")
+    public ResponseEntity<?> getUsersForCourse(@RequestParam List<Long> ids){
+        return ResponseEntity.status(HttpStatus.OK).body(userService.getUsersForIds(ids));
+    }
+
     @PostMapping("/")
     public ResponseEntity<?> newUser(@Valid @RequestBody User user, BindingResult result){
 

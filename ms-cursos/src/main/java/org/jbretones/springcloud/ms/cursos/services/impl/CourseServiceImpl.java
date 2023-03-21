@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CourseServiceImpl implements CourseService {
@@ -33,6 +34,24 @@ public class CourseServiceImpl implements CourseService {
     @Transactional(readOnly = true)
     public Optional<Course> findById(Long id) {
         return this.courseRepository.findById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Course> findByIdWithUsers(Long id) {
+        Optional<Course> optionalCourse = courseRepository.findById(id);
+        if(optionalCourse.isPresent()){
+            Course course = optionalCourse.get();
+            if(!course.getCourseUsers().isEmpty()){
+                List<Long> idsUsers = course.getCourseUsers().stream()
+                        .map(CourseUser::getUserId).toList();
+                List<User> users = userClientRest.getUsersForCourse(idsUsers);
+                course.setUsers(users);
+            }
+            return Optional.of(course);
+        }
+
+        return Optional.empty();
     }
 
     @Override
@@ -86,7 +105,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional
-    public Optional<User> unassignUserOfCourse(User user, Long idCourse) {
+    public Optional<User> deleteUserOfCourse(User user, Long idCourse) {
         Optional<Course> courseOptional = courseRepository.findById(idCourse);
 
         if(courseOptional.isPresent()){
@@ -100,5 +119,11 @@ public class CourseServiceImpl implements CourseService {
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    @Transactional
+    public void deleteCourseUserByIdUser(Long id) {
+        courseRepository.deleteCourseUserByIdUser(id);
     }
 }

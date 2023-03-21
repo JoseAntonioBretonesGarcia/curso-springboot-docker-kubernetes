@@ -30,7 +30,7 @@ public class CourseController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getCourse(@PathVariable Long id) {
-        Optional<Course> course = this.courseService.findById(id);
+        Optional<Course> course = this.courseService.findByIdWithUsers(id);
         return course.isPresent() ? ResponseEntity.status(HttpStatus.OK).body(course) : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
@@ -94,6 +94,27 @@ public class CourseController {
             return ResponseEntity.status(HttpStatus.CREATED).body(user.get());
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    @DeleteMapping("/eliminar-usuario/{cursoId}")
+    public ResponseEntity<?> deleteUserToCourse(@RequestBody User userParam, @PathVariable Long cursoId){
+        Optional<User> user;
+        try{
+            user = this.courseService.deleteUserOfCourse(userParam, cursoId);
+        }catch (FeignException feignException){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", "No se pudo crear el usuario: " +
+                    feignException.getMessage()));
+        };
+        if(user.isPresent()){
+            return ResponseEntity.status(HttpStatus.OK).body(user.get());
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    @DeleteMapping("/eliminar-curso-usuario/{userId}")
+    public ResponseEntity<?> deleteCourseUserByIdUser(@PathVariable Long userId){
+        courseService.deleteCourseUserByIdUser(userId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     private static ResponseEntity<Map<String, String>> validate(BindingResult result) {
